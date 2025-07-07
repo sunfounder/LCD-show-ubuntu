@@ -12,7 +12,7 @@ fi
 if [ ! -d /etc/X11/xorg.conf.d ]; then
 sudo mkdir -p /etc/X11/xorg.conf.d
 fi
-if [ "$version" = "20.10" ] || [[ "$version" > "20.10" ]]; then
+if [ "$version" = "20.10" ]; then
 sudo cp ./usr/tft35a-overlay-20.10.dtb /boot/firmware/overlays/tft35a-overlay.dtb
 sudo cp ./usr/tft35a-overlay-20.10.dtb /boot/firmware/overlays/tft35a.dtbo
 else
@@ -40,7 +40,7 @@ sudo echo "enable_uart=1" >> ./boot/config.txt.bak
 sudo echo "dtoverlay=tft35a:rotate=90" >> ./boot/config.txt.bak
 sudo cp -rf ./boot/config.txt.bak /boot/firmware/config.txt
 
-if [ "$version" = "20.10" ] || [[ "$version" > "20.10" ]]; then
+if [ "$version" = "20.10" ]; then
 sudo cp -rf ./usr/99-calibration.conf-35-270  /etc/X11/xorg.conf.d/99-calibration.conf
 else
 sudo cp -rf ./usr/99-calibration.conf-35-90  /etc/X11/xorg.conf.d/99-calibration.conf
