@@ -6,6 +6,8 @@ sudo ./system_backup.sh
 
 source ./system_config.sh
 
+sudo cp ./usr/99-tft.conf-25.04 /usr/share/X11/xorg.conf.d/99-tft.conf
+
 if [ -f /etc/X11/xorg.conf.d/40-libinput.conf ]; then
 sudo rm -rf /etc/X11/xorg.conf.d/40-libinput.conf
 fi
