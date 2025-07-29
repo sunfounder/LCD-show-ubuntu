@@ -80,3 +80,25 @@ If you need to switch back to the traditional HDMI display<br>
   ```sudo ./LCD-hdmi```<br>
 
 Wait a few minutes,the system will restart automaticall , enjoy with your LCD.
+
+
+
+## Develop
+
+sudo apt-get install device-tree-compiler
+dtc -I dtb -O dts -o output.dts xxx.dtb
+dtc -I dtb -O dts -o tft35a-overlay-20.10.dts tft35a-overlay-20.10.dtb
+dtc -I dtb -O dts -o mhs35ips-overlay.dts mhs35ips-overlay.dtb
+dtc -I dtb -O dts -o mhs35-overlay-20.10.dts mhs35-overlay-20.10.dtb
+
+dtc -I dts -O dtb -o mhs35ips-overlay-2.dtb mhs35ips-overlay-2.dts
+sudo cp mhs35ips-overlay-2.dtb /boot/firmware/overlays/
+sudo cp mhs35ips-overlay-2.dtb /boot/firmware/overlays/mhs35ips.dtbo
+sudo cp mhs35ips-overlay.dtb /boot/firmware/overlays/
+sudo cp mhs35ips-overlay.dtb /boot/firmware/overlays/mhs35ips.dtbo
+
+
+sudo evtest /dev/input/event5
+sudo dmesg | grep -i "ads7846"
+watch -n 0.1 "cat /proc/interrupts | grep ads7846"
+dtc -I fs /sys/firmware/devicetree/base -O dts -o ./all.dts

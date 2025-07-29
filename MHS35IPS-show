@@ -26,11 +26,11 @@ sudo echo "hdmi_drive=2" >> ./boot/config.txt.bak
 sudo cp -rf ./boot/config.txt.bak /boot/firmware/config.txt
 
 # sudo cp -rf ./usr/99-fbturbo.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-sudo cp ./usr/99-tft.conf-25.04 /usr/share/X11/xorg.conf.d/99-tft.conf
+sudo cp -f ./usr/99-tft.conf-25.04 /usr/share/X11/xorg.conf.d/99-tft.conf
+sudo cp -f ./etc/rc.local.reset_io17 /etc/rc.local
 
 row=`grep -nr "dtoverlay=vc4-fkms-v3d" ./boot/config.txt.bak | awk -F ':' '{if(NR==1)printf $1}'`
 sudo sed -i -e ''"$row"'s/dtoverlay=vc4-fkms-v3d/#dtoverlay=vc4-fkms-v3d/' ./boot/config.txt.bak
-
 
 sudo cp -rf ./usr/99-calibration.conf-mhs35ips-90  /etc/X11/xorg.conf.d/99-calibration.conf
 
@@ -38,28 +38,6 @@ sudo touch ./.have_installed
 echo "gpio:resistance:mhs35ips:90:480:320" > ./.have_installed
 
 sudo apt-get update
-#FBCP install
-if false; then
-wget --spider -q -o /dev/null --tries=1 -T 10 https://github.com
-if [ $? -eq 0 ]; then
-# sudo cp -rf ./usr/99-fbturbo-fbcp.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-sudo cp -rf ./etc/rc.local /etc/
-#sudo apt-get update
-sudo apt-get install gcc g++ git cmake make libraspberrypi-dev -y 2> error_output.txt
-result=`cat ./error_output.txt`
-echo -e "\033[31m$result\033[0m"
-grep -q "^E:" ./error_output.txt && exit
-sleep 2
-sudo rm -rf rpi-fbcp
-sudo git clone https://github.com/tasanakorn/rpi-fbcp
-sudo mkdir ./rpi-fbcp/build
-cd ./rpi-fbcp/build/
-sudo cmake ..
-sudo make
-sudo install fbcp /usr/local/bin/fbcp
-cd - > /dev/null
-fi
-fi
 
 if [ "$version" = "18.04" ] || [[ "$version" > "18.04" ]]; then
 echo "need to update touch configuration"
