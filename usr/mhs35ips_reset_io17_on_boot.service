@@ -1,0 +1,12 @@
+# MHS35 IPS display need to reset io17 to on boot to enable touch on ubuntu
+[Unit]
+Description=Reset io17 for MHS35IPS-show on boot
+After=basic.target
+Before=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=bash /usr/local/bin/mhs35ips_reset_io17_on_boot.sh
+
+[Install]
+WantedBy=multi-user.target

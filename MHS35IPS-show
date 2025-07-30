@@ -27,7 +27,10 @@ sudo cp -rf ./boot/config.txt.bak /boot/firmware/config.txt
 
 # sudo cp -rf ./usr/99-fbturbo.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
 sudo cp -f ./usr/99-tft.conf-25.04 /usr/share/X11/xorg.conf.d/99-tft.conf
-sudo cp -f ./etc/rc.local.reset_io17 /etc/rc.local
+sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.sh /usr/local/bin/
+sudo chmod +x /usr/local/bin/mhs35ips_reset_io17_on_boot.sh
+sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.service /etc/systemd/system/
+sudo systemctl enable mhs35ips_reset_io17_on_boot.service
 
 row=`grep -nr "dtoverlay=vc4-fkms-v3d" ./boot/config.txt.bak | awk -F ':' '{if(NR==1)printf $1}'`
 sudo sed -i -e ''"$row"'s/dtoverlay=vc4-fkms-v3d/#dtoverlay=vc4-fkms-v3d/' ./boot/config.txt.bak

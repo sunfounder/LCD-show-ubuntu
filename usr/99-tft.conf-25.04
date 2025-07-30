@@ -1,6 +1,6 @@
 Section "Device"
     Identifier  "TFT Device"
-    Driver      "fbdev"
+    Driver      "fbturbo"
     Option      "fbdev" "/dev/fb2"
 EndSection
 
