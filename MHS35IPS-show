@@ -25,8 +25,10 @@ sudo echo "hdmi_cvt 480 320 60 6 0 0 0" >> ./boot/config.txt.bak
 sudo echo "hdmi_drive=2" >> ./boot/config.txt.bak
 sudo cp -rf ./boot/config.txt.bak /boot/firmware/config.txt
 
-# sudo cp -rf ./usr/99-fbturbo.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-sudo cp -f ./usr/99-tft.conf-25.04 /usr/share/X11/xorg.conf.d/99-tft.conf
+fb=$(./get_fb.sh)
+echo "Found MHS35 IPS on fb device: $fb"
+sudo cp -f ./usr/99-fbturbo-$fb.conf /usr/share/X11/xorg.conf.d/99-fbturbo.conf
+
 sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.sh /usr/local/bin/
 sudo chmod +x /usr/local/bin/mhs35ips_reset_io17_on_boot.sh
 sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.service /etc/systemd/system/
