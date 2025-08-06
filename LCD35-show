@@ -6,7 +6,15 @@ sudo ./system_backup.sh
 
 source ./system_config.sh
 
-sudo cp ./usr/99-tft.conf-25.04 /usr/share/X11/xorg.conf.d/99-tft.conf
+# Remove 99-tft if exist
+if [ -f /usr/share/X11/xorg.conf.d/99-tft.conf ]; then
+rm -rf /usr/share/X11/xorg.conf.d/99-tft.conf
+fi
+fb=$(./get_fb.sh)
+echo "Found MHS35 IPS on fb device: $fb"
+cmd="sudo cp -f ./usr/99-fbturbo-$fb.conf /usr/share/X11/xorg.conf.d/99-fbturbo.conf"
+echo $cmd
+$cmd
 
 if [ -f /etc/X11/xorg.conf.d/40-libinput.conf ]; then
 sudo rm -rf /etc/X11/xorg.conf.d/40-libinput.conf
@@ -22,19 +30,9 @@ sudo cp ./usr/tft35a-overlay.dtb /boot/firmware/overlays/
 sudo cp ./usr/tft35a-overlay.dtb /boot/firmware/overlays/tft35a.dtbo
 fi
 
-if [[ "$version" < "20.04" ]]; then
-#sudo cp -rf ./boot/config-nomal.txt ./boot/config.txt.bak
-sudo cp -rf ./usr/99-fbturbo.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-else
-if [[ "$version" = "20.04" ]]; then
-#sudo cp -rf ./boot/config-nomal-20.04.txt ./boot/config.txt.bak
-sudo cp -rf ./usr/99-fbturbo-20.04.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-else
-sudo cp -rf ./usr/99-fbturbo.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-fi
 row=`grep -nr "dtoverlay=vc4-fkms-v3d" ./boot/config.txt.bak | awk -F ':' '{if(NR==1)printf $1}'`
 sudo sed -i -e ''"$row"'s/dtoverlay=vc4-fkms-v3d/#dtoverlay=vc4-fkms-v3d/' ./boot/config.txt.bak
-fi
+
 sudo echo "hdmi_force_hotplug=1" >> ./boot/config.txt.bak
 sudo echo "dtparam=i2c_arm=on" >> ./boot/config.txt.bak
 sudo echo "dtparam=spi=on" >> ./boot/config.txt.bak
@@ -47,7 +45,6 @@ sudo cp -rf ./usr/99-calibration.conf-35-270  /etc/X11/xorg.conf.d/99-calibratio
 else
 sudo cp -rf ./usr/99-calibration.conf-35-90  /etc/X11/xorg.conf.d/99-calibration.conf
 fi
-#sudo cp -rf ./usr/99-fbturbo.conf  /usr/share/X11/xorg.conf.d/99-fbturbo.conf
 #if [ -b /dev/mmcblk0p7 ]; then
 #sudo cp ./usr/cmdline.txt-noobs /boot/firmware/cmdline.txt
 #else
