@@ -2,12 +2,6 @@
 
 sudo ./system_backup.sh
 
-if [ -f /etc/X11/xorg.conf.d/40-libinput.conf ]; then
-sudo rm -rf /etc/X11/xorg.conf.d/40-libinput.conf
-fi
-if [ ! -d /etc/X11/xorg.conf.d ]; then
-sudo mkdir -p /etc/X11/xorg.conf.d
-fi
 sudo cp ./usr/mhs35ips-overlay.dtb /boot/firmware/overlays/
 sudo cp ./usr/mhs35ips-overlay.dtb /boot/firmware/overlays/mhs35ips.dtbo
 
@@ -25,43 +19,63 @@ sudo echo "hdmi_cvt 480 320 60 6 0 0 0" >> ./boot/config.txt.bak
 sudo echo "hdmi_drive=2" >> ./boot/config.txt.bak
 sudo cp -rf ./boot/config.txt.bak /boot/firmware/config.txt
 
-fb=$(./get_fb.sh)
-echo "Found MHS35 IPS on fb device: $fb"
-sudo cp -f ./usr/99-fbturbo-$fb.conf /usr/share/X11/xorg.conf.d/99-fbturbo.conf
-
-sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.sh /usr/local/bin/
-sudo chmod +x /usr/local/bin/mhs35ips_reset_io17_on_boot.sh
-sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.service /etc/systemd/system/
-sudo systemctl enable mhs35ips_reset_io17_on_boot.service
-
 row=`grep -nr "dtoverlay=vc4-fkms-v3d" ./boot/config.txt.bak | awk -F ':' '{if(NR==1)printf $1}'`
 sudo sed -i -e ''"$row"'s/dtoverlay=vc4-fkms-v3d/#dtoverlay=vc4-fkms-v3d/' ./boot/config.txt.bak
-
-sudo cp -rf ./usr/99-calibration.conf-mhs35ips-90  /etc/X11/xorg.conf.d/99-calibration.conf
 
 sudo touch ./.have_installed
 echo "gpio:resistance:mhs35ips:90:480:320" > ./.have_installed
 
-sudo apt-get update
-
-if [ "$version" = "18.04" ] || [[ "$version" > "18.04" ]]; then
-echo "need to update touch configuration"
-wget --spider -q -o /dev/null --tries=1 -T 10 https://www.x.org
+fb=$(./get_fb.sh)
 if [ $? -eq 0 ]; then
-sudo apt-get install xserver-xorg-input-evdev  2> error_output.txt
+  echo "Found MHS35 IPS on fb device: fb$fb"
 else
-if [ $hardware_arch -eq 32 ]; then
-sudo dpkg -i -B ./xserver-xorg-input-evdev_2.10.5-1_armhf.deb 2> error_output.txt
-elif [ $hardware_arch -eq 64 ]; then
-sudo dpkg -i -B ./xserver-xorg-input-evdev_1%3a2.10.6-1_arm64.deb 2> error_output.txt
+  echo "[WARNING] Not found MHS35 IPS, Maybe it's first time install, guess using fb$fb device"
 fi
-fi
-result=`cat ./error_output.txt`
-echo -e "\033[31m$result\033[0m"
-grep -q "error:" ./error_output.txt && exit
-sudo cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
+
+# Check if X11 exists, X11 installed
+if [ ! -d /etc/X11 ]; then
+  echo "No X11 found, set command line to fb$fb"
+  sudo ./cmdline_manager.sh set fbcon map:${fb}0
 else
-echo "This version is lower than ubuntu 18.04, no need to update touch configure, reboot"
+  if [ -f /etc/X11/xorg.conf.d/40-libinput.conf ]; then
+    sudo rm -rf /etc/X11/xorg.conf.d/40-libinput.conf
+  fi
+  if [ ! -d /etc/X11/xorg.conf.d ]; then
+    sudo mkdir -p /etc/X11/xorg.conf.d
+  fi
+  # Get fb device set X11 show on MHS35 IPS
+  sudo cp -f ./usr/99-fbturbo-fb$fb.conf /usr/share/X11/xorg.conf.d/99-fbturbo.conf
+
+  # Reset GPIO 17 on boot for touch screen
+  sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.sh /usr/local/bin/
+  sudo chmod +x /usr/local/bin/mhs35ips_reset_io17_on_boot.sh
+  sudo cp -f ./usr/mhs35ips_reset_io17_on_boot.service /etc/systemd/system/
+  sudo systemctl enable mhs35ips_reset_io17_on_boot.service
+
+  # Copy touch screen calibration config
+  sudo cp -rf ./usr/99-calibration.conf-mhs35ips-90  /etc/X11/xorg.conf.d/99-calibration.conf
+
+  sudo apt-get update
+
+  if [ "$version" = "18.04" ] || [[ "$version" > "18.04" ]]; then
+    echo "need to update touch configuration"
+    wget --spider -q -o /dev/null --tries=1 -T 10 https://www.x.org
+    if [ $? -eq 0 ]; then
+      sudo apt-get install xserver-xorg-input-evdev  2> error_output.txt
+    else
+      if [ $hardware_arch -eq 32 ]; then
+        sudo dpkg -i -B ./xserver-xorg-input-evdev_2.10.5-1_armhf.deb 2> error_output.txt
+      elif [ $hardware_arch -eq 64 ]; then
+        sudo dpkg -i -B ./xserver-xorg-input-evdev_1%3a2.10.6-1_arm64.deb 2> error_output.txt
+      fi
+    fi
+    result=`cat ./error_output.txt`
+    echo -e "\033[31m$result\033[0m"
+    grep -q "error:" ./error_output.txt && exit
+    sudo cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
+  else
+    echo "This version is lower than ubuntu 18.04, no need to update touch configure, reboot"
+  fi
 fi
 
 sudo sync
@@ -74,4 +88,4 @@ echo "Too many parameters"
 fi
 
 echo "reboot now"
-sudo reboot
+# sudo reboot
