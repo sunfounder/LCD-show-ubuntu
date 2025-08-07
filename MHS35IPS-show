@@ -32,8 +32,9 @@ else
   echo "[WARNING] Not found MHS35 IPS, Maybe it's first time install, guess using fb$fb device"
 fi
 
-# Check if X11 exists, X11 installed
-if [ ! -d /etc/X11 ]; then
+# Check if X11 installed
+xorg_status=$(dpkg -l xorg 2>/dev/null | grep -E '^ii|^un|^rc')
+if [ -z "$xorg_status" ]; then
   echo "No X11 found, set command line to fb$fb"
   sudo ./cmdline_manager.sh set fbcon map:${fb}0
 else
@@ -88,4 +89,4 @@ echo "Too many parameters"
 fi
 
 echo "reboot now"
-# sudo reboot
+sudo reboot
